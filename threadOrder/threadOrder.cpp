@@ -1,84 +1,93 @@
 #include <iostream>
 #include <windows.h>
-#include <tchar.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
 #include <sstream>
-#include <algorithm>
-#include <process.h>
-#include <chrono>
-#include <ctime>
 #include <iomanip>
-#include <ctime>
-#include <sstream>
-#define MAX_THREADS 8
+#include <numeric>
 
 using namespace std;
 
+DWORD WINAPI ThreadFunction(LPVOID lPtr);
+
 vector<string> datafile;
-string GetLastErrorStdStr();
 string timer(void);
 
-DWORD WINAPI ThreadFunction( LPVOID lpParam );
-
-typedef struct MyData {
-    vector<int> vecIntNumbers;
-} MYDATA, *PMYDATA;
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    setlocale(LC_ALL, "polish");
+    HANDLE hThreadArray[datafile.size()];
+    vector<int> order = {1, 4, 5, 6, 7, 2, 3, 0};
+    string GetLastErrorStdStr();
+    string str;
 
-    PMYDATA pDataArray[MAX_THREADS];
-    DWORD   dwThreadIdArray[MAX_THREADS];
-    HANDLE  hThreadArray[MAX_THREADS];
+    HANDLE hFile;
+    DWORD dwBytesWritten = 0;
+    DWORD dwBytesToWrite = 0;
+    BOOL bErrorFlag = FALSE;
 
-    for(int i=0; i<MAX_THREADS; i++) {
-        pDataArray[i] = new MYDATA;
-
-        if( pDataArray[i] == NULL ) {
-            ExitProcess(2);
-        }
+    hFile = CreateFile("threadtime.txt", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        cout << "System Error Code " << "(" << GetLastError() << "): " << GetLastErrorStdStr();
+        return 1;
     }
 
-    vector<int> order = {1, 4, 5, 6, 7, 2, 3, 0};
-
-    // Create threads
     for(const int &i : order) {
-        hThreadArray[i] = CreateThread(NULL, 0, ThreadFunction, 0, 0, &dwThreadIdArray[i]);
-        //cout << "Watek nr: " << order[i] << " ";
-        datafile.push_back("\nWatek nr ");
+        hThreadArray[i] = CreateThread(NULL, 0, ThreadFunction, 0, 0, 0);
+
+        datafile.push_back("Watek nr ");
         datafile.push_back(to_string(order[i]));
         datafile.push_back(" zakonczono o:");
         datafile.push_back(timer());
-        Sleep(1000);
-    }
-    // Check the return value for success.
-    // If CreateThread fails, terminate execution.
-    // This will automatically clean up threads and memory.
-    for(int i=0; i<MAX_THREADS; i++) {
-        if (hThreadArray[i] == NULL) {
-            ExitProcess(3);
-        }
+        datafile.push_back("\r\n");
+        Sleep(500);
     }
 
-    // Wait until all threads have terminated.
-    WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
+    if(hThreadArray==NULL) {
+        printf("Blad tworzenia watku!\n");
+    }
 
-    // Close all thread handles and free memory allocations.
-    for (int i = 0; i<MAX_THREADS; i++) {
+    WaitForMultipleObjects(datafile.size(), hThreadArray, TRUE, INFINITE);
+
+    for (int i = 0; i<(int)datafile.size(); i++) {
         CloseHandle(hThreadArray[i]);
-        if (pDataArray[i] != NULL) {
-            delete pDataArray[i];
-            pDataArray[i] = NULL;  // Ensure address is not reused.
+    }
+
+    str = accumulate(begin(datafile), end(datafile), string(),
+    [](string lhs, const string &rhs) {
+        return lhs.empty() ? rhs : lhs + "" + rhs;
+    });
+
+    dwBytesToWrite = (DWORD)str.size();
+
+    bErrorFlag = WriteFile(hFile, str.c_str(), str.size(), &dwBytesWritten, NULL);
+    if (FALSE == bErrorFlag) {
+        cout << "System Error Code " << "(" << GetLastError() << "): " << GetLastErrorStdStr();
+        return 2;
+    }
+    else {
+        if (dwBytesWritten != dwBytesToWrite) {
+            cout << "Blad!: dwBytesWritten != dwBytesToWrite\n";
+            return 3;
+        }
+        else {
+            cout << "\nZapisano pomyslnie " << dwBytesWritten << " bajtow do pliku: threadtime.txt\n" << endl;
         }
     }
+
+    CloseHandle(hFile);
 
     for (int i = 0; i<(int)datafile.size(); i++) {
         cout << datafile[i];
     }
 
+    cout << endl;
+
+    return 0;
+}
+
+DWORD WINAPI ThreadFunction(LPVOID lPtr)
+{
+    cout << "Jestem w watku " << GetCurrentThreadId() << endl;
     return 0;
 }
 
@@ -117,10 +126,4 @@ string timer(void)
     oss << put_time(&tm, " %H:%M:%S");
     auto str = oss.str();
     return str;
-}
-
-DWORD WINAPI ThreadFunction( LPVOID lpParam )
-{
-    cout << "Jestem w watku " << GetCurrentThreadId() << endl;
-    return 0;
 }
