@@ -63,7 +63,6 @@ int main(int argc, char* argv[])
     int bufferSize = fileSize/sizeof(char);
     char readBuffer[bufferSize-1];
     // Odczyt jednego znaku mniej niz rozmiar bufora, aby zaoszczedzic miejsce na konczacy znak NULL.
-    // Nalezy rowniez zwrocic uwage na rozmiar Unicode!
 
     if(FALSE == ReadFile(hFile, &readBuffer[0], fileSize, &dwBytesRead, NULL)) {
         cout << "\n\nSystem Error Code " << "(" << GetLastError() << "): " << GetLastErrorStdStr();
@@ -107,6 +106,9 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+// Funkcja pobiera ostatni kod bledu, jesli taki istnieje
+// i pobiera powiazana z nim wiadomosc tekstowa, ktora jest
+// nastepnie konwertowana na standardowy ciag znakow i zwracana.
 string GetLastErrorStdStr()
 {
     DWORD error = GetLastError();
