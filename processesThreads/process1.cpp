@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     si.cb = sizeof(si);
     PROCESS_INFORMATION pi = { 0 };
 
-    CreateProcessW(L"D:\\Programming\\SO1\\zal3\\process2\\bin\\Debug\\process2.exe",
+    CreateProcessW(L"D:\\processesThreads\\process2\\bin\\Debug\\process2.exe",
                    NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 
     Sleep(1000);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     //Spinlock
     do {
         cout << "Oczekiwanie na plik w spinlocku...";
-        hFile=CreateFile(TEXT("D:\\Programming\\SO1\\zal3\\process2\\numbers.txt"),
+        hFile=CreateFile(TEXT("D:\\processesThreads\\process2\\numbers.txt"),
                          GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     } while(hFile == INVALID_HANDLE_VALUE);
 
