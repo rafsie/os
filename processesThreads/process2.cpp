@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     HANDLE hFile;
     DWORD dwBytesRead = 0;
 
-    hFile=CreateFile(TEXT("D:\\Programming\\SO1\\zal3\\process2\\numbers.txt"),
+    hFile=CreateFile(TEXT("D:\\processesThreads\\process2\\numbers.txt"),
                      GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     DWORD fileSize = GetFileSize(hFile, NULL);
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     DWORD dwBytesWritten = 0;
     DWORD dwBytesToWrite = 0;
 
-    hFile = CreateFile(TEXT("D:\\Programming\\SO1\\zal3\\process2\\numbers.txt"),
+    hFile = CreateFile(TEXT("D:\\processesThreads\\process2\\numbers.txt"),
                        FILE_APPEND_DATA, 0, NULL, OPEN_ALWAYS, 0, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE) {
